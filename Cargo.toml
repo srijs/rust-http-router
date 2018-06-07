@@ -1,0 +1,9 @@
+[package]
+name = "http-router"
+version = "0.1.0"
+authors = ["Sam Rijs <srijs@airpost.net>"]
+
+[dependencies]
+http = "0.1.5"
+percent-encoding = "1.0.1"
+regex = "1.0.0"
