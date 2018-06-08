@@ -35,7 +35,7 @@ fn push_dynamic_segment(name: &str, pattern: &mut String) {
 
 #[inline]
 fn push_star_segment(name: &str, pattern: &mut String) {
-    pattern.push_str(&format!("(?P<{}>.+)", escape(name)));
+    pattern.push_str(&format!("(?P<{}>.*)", escape(name)));
 }
 
 #[inline]

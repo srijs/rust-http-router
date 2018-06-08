@@ -118,6 +118,28 @@ fn param_star_match() {
 }
 
 #[test]
+fn param_empty_star_match() {
+    let router = Router::<()>::builder()
+        .route(Method::GET, "/*bar", ())
+        .build()
+        .unwrap();
+    let matches = router
+        .matches(Method::GET, "/".parse().unwrap())
+        .collect::<Vec<_>>();
+
+    assert_eq!(1, matches.len());
+    assert_eq!(
+        "",
+        matches[0]
+            .params()
+            .find("bar")
+            .unwrap()
+            .decode_utf8()
+            .unwrap()
+    );
+}
+
+#[test]
 fn multi_match() {
     let router = Router::builder()
         .route(Method::GET, "/foo/*bar", 1)
