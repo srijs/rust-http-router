@@ -1,7 +1,7 @@
-use http::{Method, Uri};
+use http::Method;
 use regex::{Captures, Regex};
 
-use error::Error;
+use errors::BuildError;
 use pattern;
 
 pub(crate) struct Layer<T> {
@@ -16,7 +16,7 @@ impl<T> Layer<T> {
         method: Option<Method>,
         path: &str,
         handler: T,
-    ) -> Result<Layer<T>, Error> {
+    ) -> Result<Layer<T>, BuildError> {
         let regex = pattern::parse(path)?;
         Ok(Layer {
             method,
@@ -39,8 +39,8 @@ impl<T> Layer<T> {
     }
 
     #[inline]
-    pub(crate) fn captures<'a>(&self, uri: &'a Uri) -> Option<Captures<'a>> {
-        self.regex.captures(uri.path())
+    pub(crate) fn captures<'a>(&self, path: &'a str) -> Option<Captures<'a>> {
+        self.regex.captures(path)
     }
 
     #[inline]

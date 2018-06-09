@@ -1,8 +1,8 @@
 use regex::{escape, Regex};
 
-use error::Error;
+use errors::BuildError;
 
-pub fn parse(mut route: &str) -> Result<Regex, Error> {
+pub fn parse(mut route: &str) -> Result<Regex, BuildError> {
     let mut pattern = "^/?".to_string();
 
     if route.len() != 0 && route.as_bytes()[0] == b'/' {
@@ -15,9 +15,13 @@ pub fn parse(mut route: &str) -> Result<Regex, Error> {
         }
 
         if segment.len() > 0 && segment.as_bytes()[0] == b':' {
+            if !is_valid_param_name(&segment[1..]) {
+                return Err(BuildError::InvalidParamName);
+            }
             push_dynamic_segment(&segment[1..], &mut pattern);
-        } else if segment.len() > 0 && segment.as_bytes()[0] == b'*' {
-            push_star_segment(&segment[1..], &mut pattern);
+        } else if segment.len() == 1 && segment.as_bytes()[0] == b'*' {
+            push_wildcard(&mut pattern);
+            break;
         } else {
             push_static_segment(segment, &mut pattern);
         }
@@ -25,7 +29,20 @@ pub fn parse(mut route: &str) -> Result<Regex, Error> {
 
     pattern.push('$');
 
-    Regex::new(&pattern).map_err(Error::from_err)
+    Ok(Regex::new(&pattern).unwrap())
+}
+
+#[inline]
+fn is_valid_param_name(name: &str) -> bool {
+    let mut chars = name.chars();
+
+    if let Some(first_char) = chars.next() {
+        if first_char.is_ascii_alphabetic() {
+            return chars.all(|c| c.is_ascii_alphanumeric());
+        }
+    }
+
+    return false;
 }
 
 #[inline]
@@ -34,8 +51,8 @@ fn push_dynamic_segment(name: &str, pattern: &mut String) {
 }
 
 #[inline]
-fn push_star_segment(name: &str, pattern: &mut String) {
-    pattern.push_str(&format!("(?P<{}>.*)", escape(name)));
+fn push_wildcard(pattern: &mut String) {
+    pattern.push_str(&format!("(.*)"));
 }
 
 #[inline]
